@@ -159,7 +159,7 @@ const FormStep3 = ({ control, errors }) => (
       <Controller
         name="countryCode"
         control={control}
-        defaultValue="+91 "
+        defaultValue="+91"
         render={({ field: { name, onChange, value } }) => (
           <>
             <Form.Select
@@ -171,11 +171,14 @@ const FormStep3 = ({ control, errors }) => (
               <option value="+91">(+91) India</option>
               <option value="+1">(+1) America</option>
             </Form.Select>
-            {errors.countryCode && <div className="text-danger">This field is required!</div>}
+            {errors.countryCode && <div className="text-danger">{errors.countryCode.message}</div>}
           </>
         )}
         rules={{
-          required: true,
+          required: {
+            value: true,
+            message: 'This field is required!',
+          },
         }}
       />
     </Form.Group>
@@ -188,14 +191,18 @@ const FormStep3 = ({ control, errors }) => (
         render={({ field: { name, onChange, value } }) => (
           <>
             <Form.Control value={value} onChange={onChange} type="number" name={name} />
-            {errors.phoneNumber && (
-              <div className="text-danger">Only 10 digit numeric phone number is allowed.</div>
-            )}
+            {errors.phoneNumber && <div className="text-danger">{errors.phoneNumber.message}</div>}
           </>
         )}
         rules={{
-          required: true,
-          pattern: /^\d{10}$/,
+          required: {
+            value: true,
+            message: 'This field is required!',
+          },
+          pattern: {
+            value: /^\d{10}$/,
+            message: 'Only 10 digits are allowed!',
+          },
         }}
       />
     </Form.Group>
@@ -214,12 +221,15 @@ const FormStep3 = ({ control, errors }) => (
               label="I accept all terms and conditions"
             />
             {errors.acceptTermsAndCondition && (
-              <div className="text-danger">This field is required!</div>
+              <div className="text-danger">{errors.acceptTermsAndCondition.message}</div>
             )}
           </>
         )}
         rules={{
-          required: true,
+          required: {
+            value: true,
+            message: 'This field is required!',
+          },
         }}
       />
     </Form.Group>
