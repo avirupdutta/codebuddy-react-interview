@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Col, Row, Tab, Tabs } from 'react-bootstrap';
 import Button from 'react-bootstrap/Button';
 import Container from 'react-bootstrap/Container';
 import Form from 'react-bootstrap/Form';
@@ -17,13 +18,19 @@ const FormStep1 = ({ control, errors }) => (
         render={({ field: { name, onChange, value } }) => (
           <>
             <Form.Control value={value} onChange={onChange} type="email" name={name} />
-            {errors.email && <div className="text-danger">Must be a valid email ID</div>}
+            {errors.email && <div className="text-danger">{errors.email.message}</div>}
           </>
         )}
         rules={{
-          required: true,
-          pattern:
-            /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|.(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
+          required: {
+            value: true,
+            message: 'This field is required!',
+          },
+          pattern: {
+            value:
+              /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|.(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
+            message: 'Must be a valid email ID',
+          },
         }}
       />
     </Form.Group>
@@ -36,24 +43,26 @@ const FormStep1 = ({ control, errors }) => (
         render={({ field: { name, onChange, value } }) => (
           <>
             <Form.Control value={value} onChange={onChange} type="password" name={name} />
-            {errors.password && (
-              <div className="text-danger">
-                Must contain minimum 2 capital letters, 2 small letter, 2 numbers and 2 special
-                characters.
-              </div>
-            )}
+            {errors.password && <div className="text-danger">{errors.password.message}</div>}
           </>
         )}
         rules={{
-          required: true,
-          pattern: /^(?=(.*[A-Z]){2})(?=(.*[a-z]){2})(?=(.*\d){2})(?=(.*[\W_]){2}).{8,}$/,
+          required: {
+            value: true,
+            message: 'This field is required!',
+          },
+          pattern: {
+            value: /^(?=(.*[A-Z]){2})(?=(.*[a-z]){2})(?=(.*\d){2})(?=(.*[\W_]){2}).{8,}$/,
+            message:
+              'Must contain minimum 2 capital letters, 2 small letter, 2 numbers and 2 special characters.',
+          },
         }}
       />
     </Form.Group>
   </Form>
 );
 
-const FormStep2 = ({ control, errors }) => (
+const FormStep2 = ({ control, errors, trigger }) => (
   <Form>
     <Form.Group className="mb-3">
       <Form.Label>First Name *</Form.Label>
@@ -64,16 +73,26 @@ const FormStep2 = ({ control, errors }) => (
         render={({ field: { name, onChange, value } }) => (
           <>
             <Form.Control value={value} onChange={onChange} type="text" name={name} />
-            {errors.firstName && (
-              <div className="text-danger">
-                Only alphabets are allowed. Minimum of 2 character and maximum 50.
-              </div>
-            )}
+            {errors.firstName && <div className="text-danger">{errors.firstName.message}</div>}
           </>
         )}
         rules={{
-          required: true,
-          pattern: /^[a-zA-Z]{2,50}$/,
+          required: {
+            value: true,
+            message: 'This field is required!',
+          },
+          pattern: {
+            value: /^[a-zA-Z]+$/,
+            message: 'Only alphabets are allowed!',
+          },
+          minLength: {
+            value: 2,
+            message: 'Minimum 2 characters are required!',
+          },
+          maxLength: {
+            value: 50,
+            message: 'Maximum 50 characters are allowed!',
+          },
         }}
       />
     </Form.Group>
@@ -85,17 +104,24 @@ const FormStep2 = ({ control, errors }) => (
         defaultValue=""
         render={({ field: { name, onChange, value } }) => (
           <>
-            <Form.Control value={value} onChange={onChange} type="text" name={name} />
-            {errors.lastName && (
-              <div className="text-danger">
-                Only alphabets are allowed. Minimum of 2 character and maximum 50.
-              </div>
-            )}
+            <Form.Control
+              onBlur={() => trigger(name)}
+              value={value}
+              onChange={e => {
+                trigger(name);
+                onChange(e);
+              }}
+              type="text"
+              name={name}
+            />
+            {errors.lastName && <div className="text-danger">{errors.lastName.message}</div>}
           </>
         )}
         rules={{
-          required: false,
-          pattern: /^[a-zA-Z]+$/,
+          pattern: {
+            value: /^[a-zA-Z]+$/,
+            message: 'Only alphabets are allowed!',
+          },
         }}
       />
     </Form.Group>
@@ -108,12 +134,18 @@ const FormStep2 = ({ control, errors }) => (
         render={({ field: { name, onChange, value } }) => (
           <>
             <Form.Control value={value} onChange={onChange} type="text" name={name} />
-            {errors.address && <div className="text-danger">Minimum length 10.</div>}
+            {errors.address && <div className="text-danger">{errors.address.message}</div>}
           </>
         )}
         rules={{
-          required: true,
-          pattern: /^[a-zA-Z]{10,}$/,
+          required: {
+            value: true,
+            message: 'This field is required!',
+          },
+          minLength: {
+            value: 10,
+            message: 'Minimum 10 characters are required!',
+          },
         }}
       />
     </Form.Group>
@@ -198,17 +230,44 @@ const Home = () => {
   const {
     control,
     formState: { errors },
+    setError,
     handleSubmit,
+    trigger,
   } = useForm();
 
-  console.log({ errors });
+  console.log(errors);
 
   const [step, setStep] = useState({
     currentStep: 1,
     totalSteps: 3,
+    visited: [1],
   });
+  const tabs = [
+    {
+      component: <FormStep1 errors={errors} control={control} />,
+    },
+    {
+      component: (
+        <FormStep2 setError={setError} trigger={trigger} errors={errors} control={control} />
+      ),
+    },
+    {
+      component: <FormStep3 errors={errors} control={control} />,
+    },
+  ];
+
   const navigate = useNavigate();
   const goToPostPage = () => navigate('/posts');
+
+  const handleTabSelect = stepCount => {
+    const currentStep = Number(stepCount);
+    if (step.visited.includes(currentStep)) {
+      setStep({
+        ...step,
+        currentStep,
+      });
+    }
+  };
 
   const goBack = () => {
     // go back
@@ -243,28 +302,15 @@ const Home = () => {
           .catch(() => {
             toast.error('Failed to submit the form! Please try again later.');
           });
+      } else {
+        toast.success('Form details have been saved!');
       }
     } else {
       setStep({
         ...step,
         currentStep: step.currentStep + 1,
+        visited: [...new Set([...step.visited, step.currentStep + 1])],
       });
-    }
-  };
-
-  const RenderFormByStep = () => {
-    switch (step.currentStep) {
-      case 1:
-        return <FormStep1 errors={errors} control={control} />;
-
-      case 2:
-        return <FormStep2 errors={errors} control={control} />;
-
-      case 3:
-        return <FormStep3 errors={errors} control={control} />;
-
-      default:
-        return null;
     }
   };
 
@@ -275,7 +321,21 @@ const Home = () => {
           Step: {step.currentStep} out of {step.totalSteps}
         </h3>
         <Form>
-          {RenderFormByStep()}
+          <Row className="mt-5">
+            <Col xs={12}>
+              <Tabs activeKey={step.currentStep} onSelect={handleTabSelect}>
+                {tabs.map((each, index) => (
+                  <Tab
+                    disabled={!step.visited.includes(index + 1)}
+                    eventKey={index + 1}
+                    title={`Step ${index + 1}`}
+                  >
+                    {step.currentStep === index + 1 && <div className="pt-4">{each.component}</div>}
+                  </Tab>
+                ))}
+              </Tabs>
+            </Col>
+          </Row>
           <div className="btn-group" role="group" aria-label="call to action buttons">
             <Button disabled={step.currentStep === 1} onClick={goBack}>
               Back
