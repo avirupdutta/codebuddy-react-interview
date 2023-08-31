@@ -213,7 +213,7 @@ const FormStep3 = ({ control, errors }) => (
         defaultValue=""
         render={({ field: { name, onChange, value } }) => (
           <>
-            <Form.Check // prettier-ignore
+            <Form.Check
               type="checkbox"
               name={name}
               onChange={onChange}
